@@ -93,10 +93,6 @@ var Token = function(value, expirationTimeInSeconds, scope) {
 
   /* Atributos privados */
 
-  var authHost = authHost;
-  var clientID = clientID;
-  var redirectURI = redirectURI;
-
   var resourceURL = authHost + '/api/eu/';
   var authorizationURL = authHost + '/o/authorize/';
   var logoutURL = authHost + '/o/revoke_token/';
@@ -247,9 +243,9 @@ var Token = function(value, expirationTimeInSeconds, scope) {
 			console.log(response);
 			callback(response);
 		},
-		error: function(response) {
+		error: function(error) {
 			alert('Falha na comunicação com o SUAP');
-            console.log(response);
+            console.log(error);
 		}
     });
   };
@@ -263,13 +259,13 @@ var Token = function(value, expirationTimeInSeconds, scope) {
 		url: logoutURL,
         data: {'token': token.getValue(), 'client_id': clientID},
 		type: 'POST',
-		success: function(response) {
+		success: function() {
 			token.revoke();
 			window.location = redirectURI;
 		},
-		error: function(response) {
+		error: function(error) {
 			alert('Falha na comunicação com o SUAP');
-            console.log(response);
+            console.log(error);
 		}
     });
   };
