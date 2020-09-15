@@ -89,13 +89,14 @@ var Token = function(value, expirationTimeInSeconds, scope) {
  * @param {string} redirectURI - URI de redirecionamento da aplicação cadastrada no SuapClient.
  *
  */
- var SuapClient = function(authHost, clientID, redirectURI) {
+ var SuapClient = function(authHost, clientID, redirectURI, scope) {
 
   /* Atributos privados */
 
   var authHost = authHost;
   var clientID = clientID;
   var redirectURI = redirectURI;
+  var scope = scope;
 
   var resourceURL = authHost + '/api/eu/';
   var authorizationURL = authHost + '/o/authorize/';
@@ -220,6 +221,7 @@ var Token = function(value, expirationTimeInSeconds, scope) {
       "?response_type=" + responseType +
       "&grant_type="    + grantType +
       "&client_id="     + clientID +
+      "&scope="  + scope;
       "&redirect_uri="  + redirectURI;
     return loginUrl;
   };
