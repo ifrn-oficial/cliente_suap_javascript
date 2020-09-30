@@ -1,83 +1,72 @@
-
 /**
  * Classe que representa um token de autorização.
  *
- * @constructor
- *
- * @param {string} token - A sequência de caracteres que representa o Token.
+ * @param {string} value - A sequência de caracteres que representa o Token.
  * @param {number} expirationTime - Número de segundos que o token durará.
  * @param {string} scope - A lista de escopos (separados por espaço) que foi autorizado pelo usuário.
  */
-var Token = function(value, expirationTimeInSeconds, scope) {
-  
-  /* Atributos */
+class TokenAuthorization {
 
-  var value = value;
-  var startTime = new Date().getTime(); // O valor em milissegundos.
-  var finishTime = new Date(startTime + expirationTimeInSeconds * 1000); // O objeto Date.
-  var scope = scope;
-  
-  // Cria os cookies para o token, seu momento da expiração e seus escopos.
-  
-  if (!Cookies.get('suapToken')) {
-    Cookies.set('suapToken', value, { expires: finishTime});
-  } else {
-    value = Cookies.get('suapToken');
+  constructor(value, expirationTimeInSeconds, scope) {
+
+    const EXISTING_SUAP_TOKEN = Cookies.get('suapToken');
+    const EXISTING_SUAP_EXP_TIME = Cookies.get('suapTokenExpirationTime');
+    const EXISTING_SUAP_SCOPE = Cookies.get('suapScope');
+
+    /**
+     * Alguns atributos recebem valores condicionais. Caso o cookie relacionado ao atribuito não
+     * exista previamente, o seu valor vai ser o do parâmetro vindo do construtor.
+     */
+    this.value = EXISTING_SUAP_TOKEN || value;
+    this.startTime = new Date().getTime(); // O valor em milissegundos.
+    this.finishTime = EXISTING_SUAP_EXP_TIME || new Date(this.startTime + expirationTimeInSeconds * 1000);
+    this.scope = EXISTING_SUAP_SCOPE || scope;
+
+    // Caso um dos cookies não exista previamente, crie-o.
+
+    if (!EXISTING_SUAP_TOKEN) {
+      Cookies.set('suapToken', this.value, { expires: this.finishTime });
+    }
+
+    if (!EXISTING_SUAP_EXP_TIME) {
+      Cookies.set('suapTokenExpirationTime', this.finishTime, { expires: this.finishTime });
+    }
+
+    if (!EXISTING_SUAP_SCOPE) {
+      Cookies.set('suapScope', this.scope, { expires: this.finishTime });
+    }
+
   }
 
-  if (!Cookies.get('suapTokenExpirationTime')) {
-    Cookies.set('suapTokenExpirationTime', finishTime, { expires: finishTime});
-  } else {
-    finishTime = Cookies.get('suapTokenExpirationTime');
+  getValue() {
+    return this.value;
   }
 
-  if (!Cookies.get('suapScope')) {
-    Cookies.set('suapScope', scope, { expires: finishTime});
-  } else {
-    scope = Cookies.get('suapScope');
-  }
-
-  this.getValue = function() {
-    return value;
+  getExpirationTime = function () {
+    return this.finishTime;
   };
 
-  this.getExpirationTime = function() {
-    return finishTime;
+  getScope = function () {
+    return this.scope;
   };
 
-  this.getScope = function() {
-    return scope;
+  isValid = function () {
+    return Cookies.get('suapToken') && this.value;
   };
 
-  this.isValid = function() {
-    if (Cookies.get('suapToken') && value != null) {
-      return true;
-    }
-    return false;
-  };
+  revoke = function () {
 
-  this.revoke = function() {
+    this.value = null;
+    this.startTime = null;
+    this.finishTime = null;
 
-    value = null;
-    startTime = null;
-    finishTime = null;
-
-    if (Cookies.get('suapToken')){
-      Cookies.remove('suapToken');
-    }
-
-    if (Cookies.get('suapTokenExpirationTime')){
-      Cookies.remove('suapTokenExpirationTime');
-    }
-
-    if (Cookies.get('suapScope')){
-      Cookies.remove('suapScope');
-    }
+    Cookies.remove('suapToken');
+    Cookies.remove('suapTokenExpirationTime');
+    Cookies.remove('suapScope');
 
   };
 
 };
-
 
 /**
  * Classe principal do SDK e seu construtor, que inicializa os principais atributos.
@@ -170,7 +159,7 @@ var Token = function(value, expirationTimeInSeconds, scope) {
    *
    */
   this.init = function() {
-    token = new Token(extractToken(), extractDuration(), extractScope());
+    token = new TokenAuthorization(extractToken(), extractDuration(), extractScope());
     dataJSON = {};
   };
 
