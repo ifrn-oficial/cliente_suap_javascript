@@ -217,13 +217,15 @@ var Token = function(value, expirationTimeInSeconds, scope) {
    * @return {string} A URL de login do SuapClient.
    */
   this.getLoginURL = function() {
-    var loginUrl = authorizationURL +
-      "?response_type=" + responseType +
-      "&grant_type="    + grantType +
-      "&client_id="     + clientID +
-      "&scope="  + scope;
-      "&redirect_uri="  + redirectURI;
-    return loginUrl;
+     var params = new URLSearchParams({
+       response_type: responseType,
+       grant_type: grantType,
+       client_id: clientID,
+       scope,
+       redirect_uri: redirectURI,
+     });
+	  
+     return `${authorizationURL}?${params.toString()}`;
   };
 
 
